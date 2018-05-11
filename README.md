@@ -1,4 +1,4 @@
-<p align="center"><img src="design/resources/logo/fisc-microlang-logo-resized.png"></p>
+<p align="center"><img src="design/resources/logo/fisc-microlang-logo-resized.jpg"></p>
 <p align="center"><img src="design/resources/logo/microlang-logo.png"></p>
 
 # FISC-Microlang
