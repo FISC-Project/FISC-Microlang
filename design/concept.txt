@@ -4,12 +4,10 @@
 ------------------------------------
 
 ---- MODEL DESIGN ------------------
-module counter(clk, rst, en, out);
+module counter(clk, rst, en, reg_out);
 
 input wire clk, rst, en;
-output [3:0] out;
-
-reg [3:0] reg_out;
+output reg [3:0] reg_out;
 
 always@(posedge clk)
 begin
@@ -102,28 +100,28 @@ rst | en
 
 initial begin	
 	/* BIND Operation: Cold-start */
-	/* COLD operation is considered same as <NIL>, but inputs' states are known. We don't drive them. */
+	/* COLD operation is considered same as <NIL>, but inputs' states are known. We don't drive them. 
+       Will explicitly output 00 during module's declaration. */
 
 	/* BIND operation: Reset */
-	/* The module's constructor deals with this */
+	/* The module's constructor deals with this. Will explicitly output 1000 during module's declaration. */
 	
 	/* BIND operation: Enable counting */
 	my_counter.enable(); // Output 01
 	#100;
 	
 	/* BIND operation: Finish counting */
-	/* FINISH operation is executed by the module's deconstructor by default. */
+	/* FINISH operation is executed by the module's deconstructor by default.
+	   Will explicitly output 0100 during module's de-construction. */
 	$finish;
 end
 -------------------------------------
 **** Intended binding mechanism:
 
-module counter(clk, rst, en, out);
+module counter(clk, rst, en, reg_out);
 
 input wire clk, rst, en;
-output [3:0] out;
-
-reg [3:0] reg_out;
+output reg [3:0] reg_out;
 
 /* Call trace: #1 */
 fn counter() { /* NOTE : No inputs are involved, but it cold starts the module since it's the constructor. GENERATES MICROCODE: 00 */
