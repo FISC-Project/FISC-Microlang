@@ -29,23 +29,23 @@ wire [3:0] out;
 counter my_counter(clk, rst, en, out);
 
 initial begin
-	/* BIND Operation: Cold-start */
+	/* BIND Operation: Cold-start (COLD). */
 	clk = 1;
 	rst = 0;
 	en  = 0;
 	#1;
 	
-	/* BIND operation: Reset */
+	/* BIND operation: Reset (RESET). */
 	rst = 1;
 	#1;
 	rst = 0;
 	#1;
 	
-	/* BIND operation: Enable counting */
+	/* BIND operation: Enable counting (ENABLE). */
 	en = 1;
 	#100;
 	
-	/* BIND operation: Finish counting */
+	/* BIND operation: Finish counting (FINISH). */
 	en = 0;
 	#1;
 	$finish;
@@ -99,18 +99,18 @@ rst | en
 **** Intended testbench design:
 
 initial begin	
-	/* BIND Operation: Cold-start */
+	/* BIND Operation: Cold-start (COLD). */
 	/* COLD operation is considered same as <NIL>, but inputs' states are known. We don't drive them. 
        Will explicitly output 00 during module's declaration. */
 
-	/* BIND operation: Reset */
+	/* BIND operation: Reset (RESET). */
 	/* The module's constructor deals with this. Will explicitly output 1000 during module's declaration. */
 	
-	/* BIND operation: Enable counting */
+	/* BIND operation: Enable counting (ENABLE). */
 	my_counter.enable(); // Output 01
 	#100;
 	
-	/* BIND operation: Finish counting */
+	/* BIND operation: Finish counting (FINISH). */
 	/* FINISH operation is executed by the module's deconstructor by default.
 	   Will explicitly output 0100 during module's de-construction. */
 	$finish;
@@ -124,8 +124,8 @@ input wire clk, rst, en;
 output reg [3:0] reg_out;
 
 /* Call trace: #1 */
-fn counter() { /* NOTE : No inputs are involved, but it cold starts the module since it's the constructor. GENERATES MICROCODE: 00 */
-	/* Module constructor. Execute reset here */
+fn counter() { /* NOTE : No inputs are involved, but it cold starts the module since it's the constructor. GENERATES MICROCODE: 00. */
+	/* Module constructor. Execute reset here. */
 	/* NOTE: cold-start is already explicit by nature. 
 	   Every newly instantiated module has its inputs all '0' or all '1' plus a 1 cycle delay. */
 
@@ -133,13 +133,13 @@ fn counter() { /* NOTE : No inputs are involved, but it cold starts the module s
 }
 
 /* Call trace: #4 */
-fn ~counter() { /* NOTE : Inputs ARE involved, thus: GENERATES MICROCODE: 00 */
+fn ~counter() { /* NOTE : Inputs ARE involved, thus: GENERATES MICROCODE: 00. */
 	/* Terminate the counter. Note that it has no function arguments. */
 	en = 0;
 }
 
 /* Call trace: #2 */
-fn = (u4 rval) { /* NOTE : GENERATES MICROCODE: 10,00 */
+fn = (u4 rval) { /* NOTE : GENERATES MICROCODE: 10,00. */
 	/* Binds '=' operator. Note that it has 1 function argument (obligatory). Operator is triggered by the testbench. */
 	/* Note: All non-driven wires will default to '0' or '1' in every new cycle. */
 
@@ -150,7 +150,7 @@ fn = (u4 rval) { /* NOTE : GENERATES MICROCODE: 10,00 */
 }
 
 /* Call trace: #3 */
-fn enable() { /* NOTE : Inputs ARE involved, thus: GENERATES MICROCODE: 01 */
+fn enable() { /* NOTE : Inputs ARE involved, thus: GENERATES MICROCODE: 01. */
 	/* Enable the counter. Note that it has no function arguments. */
 	en = 1; /* Raw input assignments are translated into microcode. en's bit will be '1' on the 4th entry of the microcode memory. */
 }
@@ -168,5 +168,4 @@ begin
 end
 
 endmodule
-
 */
