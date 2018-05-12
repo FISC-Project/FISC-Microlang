@@ -1,0 +1,196 @@
+module Register {
+    u1 rst, wr, rd;
+    u32 input, output;
+
+    fn Register() {
+        rst = 1;
+    }
+
+    u32 $get() {
+        rd = 1;
+        #1 return output; 
+    }
+
+    fn $set(u32 rval) {
+        input = rval;
+        #1 wr = 1;
+    }
+
+    always main(+$clk, -rst) {
+        if(rst)
+            data = 0;
+        else if(wr)
+            data = input;
+        else if(rd)
+            output = data;
+    }
+
+    private:
+        u32 data;
+};
+
+module ALU {
+    u32 op1, op2, output;
+    u3 func;
+
+    always main(+$clk) {
+        output = 
+            switch(func) {
+                @1: op1 + op2,
+                @2: op1 - op2,
+                @3: op1 * op2,
+                @4: op1 / op2
+            };
+    }
+};
+
+module MemoryController {
+    u1 wr, rd;
+    u32 addr, input, output;
+    
+    fn MemoryController() {
+        /* Do nothing */
+    }
+
+    u32 $get(u32 idx) {
+        addr = idx;
+        rd   = 1;
+        #1 return output;
+    }
+
+    fn $set(u32 rval, u32 idx) {
+        input = rval;
+        addr  = idx;
+        #1 wr = 1;
+    }
+
+    always main(+$clk, -rst) {
+        if(wr)
+            memory[addr] = input;
+        else if(rd)
+            output = memory[addr];
+    }
+
+    private:
+        u32 memory[1024];
+};
+
+testbench CPU {
+    u1 clk  = 0;
+    u1 halt = 0;
+    Register registerFile[8];
+    Register ip(.$clk = clk); /* Instruction Pointer. Same as Program Counter but is word aligned. */
+    Register sp(.$clk = clk); /* Stack Pointer.                                                    */
+    MemoryController mem(.$clk = clk);
+    ALU alu(.$clk = clk);
+
+    enum ISA_INSTRUCTIONS {
+        ADD, ADDI, ADDIS, ADDS,
+        SUB, SUBI, SUBIS, SUBS,
+        MUL, SMULH, UMULH, 
+        SDIV, UDIV
+        AND, ANDI, ANDIS, ANDS,
+        ORR, ORRI,
+        EOR, EORI,
+        NEG, NEGI,
+        NOT, NOTI,
+        LSL, LSR,
+        MOVK, MOVZ, MOVRK, MOVRZ,
+        LDPC,
+        B,
+        BCOND,
+        BL,
+        BR,
+        BRL,
+        CBNZ,
+        CBZ,
+        /* ... */
+        LDR,
+        /* ... */
+        STR,
+        /* ... */
+    };
+
+    typedef u1(enum ISA_INSTRUCTIONS)(u32 instruction) execute_fn_t;
+
+    always clockgen() {
+        #1 clk = ~clk;
+    }
+
+    u32 +,-,*,/ (u32 lval, u32 rval) {
+        alu.op1  = lval;
+        alu.op2  = rval;
+        alu.func = $fnn + 1;
+        /* NOTE: $fn returns the name of the function (string); $fnn returns the nth function that was called. */
+        #1;
+        return alu.output;
+    }
+
+    u32 fetch(u32 address) {
+        return mem[address];
+    }
+
+    execute_fn_t decode(u32 instruction) {
+        return (fn(enum ISA_INSTRUCTIONS))instruction[31:21];
+    }
+
+    u1 execute(execute_fn_t function_pointer, u32 instruction) {
+        return function_pointer(instruction);
+    }
+
+    u1 ADD,ADDI,ADDIS,ADDS(u32 instruction) {
+        switch($fnn) {
+            @0: registerFile[instruction[4:0]] = registerFile[9:5] + registerFile[20:16];
+            @1: registerFile[instruction[4:0]] = registerFile[9:5] + (u12)instruction[21:10];
+            @2: registerFile[instruction[4:0]] = registerFile[9:5] + (u12)instruction[21:10]; // TODO: Set flags
+            @3: registerFile[instruction[4:0]] = registerFile[9:5] + registerFile[20:16];     // TODO: Set flags
+        }
+
+        return 0;
+    }
+
+    u1 SUB,SUBI,SUBIS,SUBS(u32 instruction) {
+        switch($fnn) {
+            @0: registerFile[instruction[4:0]] = registerFile[9:5] - registerFile[20:16];
+            @1: registerFile[instruction[4:0]] = registerFile[9:5] - (u12)instruction[21:10];
+            @2: registerFile[instruction[4:0]] = registerFile[9:5] - (u12)instruction[21:10]; // TODO: Set flags
+            @3: registerFile[instruction[4:0]] = registerFile[9:5] - registerFile[20:16];     // TODO: Set flags
+        }
+
+        return 0;
+    }
+
+    u1 LDR(u32 instruction) {
+        registerFile[instruction[4:0]] = mem[registerFile[instruction[9:5]] + instruction[20:12]]
+    }
+
+    u1 STR(u32 instruction) {
+        mem[registerFile[instruction[9:5]] + instruction[20:12]] = registerFile[instruction[4:0]]
+    }
+
+    CPU() {
+        for(u8 i = 0; i < 8; i++)
+            registerFile[i] = Register(.$clk = clk);
+        
+        while(halt == 0) {
+            /* -- CPU ALGORITHM --
+                    1-Fetch
+                    2-Decode
+                    3-Execute
+                    4-Memory Access
+                    5-Writeback
+                     * Repeat *
+            */
+
+            u32 instruction_buffer = fetch(ip++);
+            execute_fn_t function_pointer = decode(instruction_buffer);
+            if(function_pointer == B,BL,BR /* ... */) {
+                /* TODO: Branch */
+            } else {
+                halt = execute(function_pointer, instruction_buffer);
+            }
+        }
+
+        $finish();
+    }
+}

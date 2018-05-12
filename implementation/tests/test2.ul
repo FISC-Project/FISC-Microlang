@@ -1,0 +1,51 @@
+module Register {
+    private:
+        u8 data;
+
+    public:
+        u1 rst, wr, rd;
+        u8 input, output;
+
+        fn Register() {
+            rst = 1;
+        }
+
+        fn $set(u8 rval) { // EVAL: registerFile[x].input = rval; #1 registerFile[x].wr = 1;
+            input = rval;
+            #1;
+            wr = 1;
+            /* IMPORTANT NOTE: '$set' is equivalent to the operator '='. */
+        }
+
+        u8 $get() { // EVAL: registerFile[x].rd = 1; #1 localvar = registerFile[x].output;
+            rd = 1;
+            #1;
+            return output;
+        }
+
+        always main(+$clk, -rst) {
+            if(rst == 1)
+                data = 0;
+            else if(wr)
+                data = input;
+            else if(rd)
+                output = data;
+        }
+};
+
+testbench Register_tb {
+    u1 clk = 0;
+    Register registerFile[8];
+
+    always clockgen() {
+        #1 clk = ~clk;
+    }
+
+    Register_tb() {
+        for(u8 i = 0; i < 8; i++)
+            registerFile[i] = Register(.$clk = clk);
+        
+        registerFile[0] = registerFile[1];
+        $finish();
+    }
+};

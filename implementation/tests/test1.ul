@@ -1,0 +1,44 @@
+module Counter {
+    private:
+        u8 internal_buffer;
+
+    public:
+        u1 en, rst;
+        u8 output = internal_buffer;
+        
+        fn Counter() {
+            /* Constructor */
+            rst = 1;
+        }
+    
+        fn ~Counter() {
+            /* Deconstructor */
+            en = 0;
+        }
+
+        fn enable() {
+            en = 1;
+        }
+
+        always main(+$clk, -rst) {
+            if(rst == 1)
+                internal_buffer = 0;
+            else if(en == 1)
+                internal_buffer++;
+        }
+};
+
+testbench Counter_tb {
+    u1 clk = 0;
+    Counter my_counter(.$clk = clk);
+
+    always clockgen() {
+        #1 clk = ~clk;
+    }
+
+    counter_tb() {
+        my_counter.enable();
+        #100;
+        $finish();
+    }
+};

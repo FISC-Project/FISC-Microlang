@@ -1,0 +1,166 @@
+module Register {
+    private:
+        u8 data;
+    
+    public:
+        u1 rst, wr, rd;
+        u8 input, output;
+
+        fn Register() {
+            rst = 1;
+        }
+
+        fn $set(u8 rval) { // EVAL: registerFile[x].input = rval; #1 registerFile[x].wr = 1;
+            input = rval;
+            #1;
+            wr = 1;
+            /* IMPORTANT NOTE: '$set' is equivalent to the operator '='. */
+        }
+
+        u8 $get() { // EVAL: registerFile[x].rd = 1; #1 localvar = registerFile[x].output;
+            rd = 1;
+            #1;
+            return output;
+        }
+
+        always main(+$clk, -rst) {
+            if(rst)
+                data = 0;
+            else if(wr)
+                data = input;
+            else if(rd)
+                output = data;
+        }
+};
+
+module ALU {
+    public: /* Default is public */
+        u8 op1, op2, output;
+        u3 func;
+
+        always main(+$clk) {
+            output = 
+                switch(func) {
+                    @1: op1 + op2,
+                    @2: op1 - op2,
+                    @3: op1 * op2,
+                    @4: op1 / op2
+                };
+        }
+};
+
+testbench Register_and_ALU_tb {
+    u1 clk = 0;
+    Register registerFile[8];
+    ALU alu(.$clk = clk);
+
+    u8 +,-,*,/ (u8 lval, u8 rval) {
+        alu.op1  = lval;
+        alu.op2  = rval;
+        alu.func = $fnn + 1;
+        /* NOTE: $fn returns the name of the function (string); $fnn returns the nth function that was called. */
+        #1;
+        return alu.output;
+    }
+
+    always clockgen() {
+        #1 clk = ~clk;
+    }
+
+    Register_and_ALU_tb() {
+        for(u8 i = 0; i < 8; i++)
+            registerFile[i] = Register(.$clk = clk);
+
+        registerFile[0] = registerFile[1] + registerFile[2];
+        $finish();
+        
+        /* INTENDED GENERATED MICROCODE:
+            // --- 1: UNROLL FOR LOOP
+            registerFile[0].rst = 1;
+            registerFile[1].rst = 1;
+            registerFile[2].rst = 1;
+            registerFile[3].rst = 1;
+            registerFile[4].rst = 1;
+            registerFile[5].rst = 1;
+            registerFile[6].rst = 1;
+            registerFile[7].rst = 1;
+            #1;
+
+            // --- 2: DEFAULT ALL WIRES TO 0 (This is explicit)
+            registerFile[0].rst = 0;
+            registerFile[1].rst = 0;
+            registerFile[2].rst = 0;
+            registerFile[3].rst = 0;
+            registerFile[4].rst = 0;
+            registerFile[5].rst = 0;
+            registerFile[6].rst = 0;
+            registerFile[7].rst = 0;
+
+            // --- 3: READ registerFile[2] into a local anonymous buffer at the same time (trigger $get())
+            registerFile[2].rd = 1;
+            #1;
+            anon_op2 = registerFile[2].output; // ---- 3.1: LATCH register output into buffer
+            #1;
+
+            // --- 4: READ registerFile[1] INTO A LOCAL ANONYMOUS BUFFER (trigger $get())
+            registerFile[1].rd = 1;
+            #1;
+            anon_op1 = registerFile[1].output; // ---- 4.1: LATCH register output into buffer
+            #1;
+
+            // --- 5: LATCH the two buffers into the ALU's inputs and set the ALU function
+            alu.op1  = anon_op1;
+            alu.op2  = anon_op2;
+            alu.func = 1;
+            #1;
+            anon_result = alu.output;
+            #1;
+
+            // --- 6: LATCH the ALU output into registerFile[0] from a local anonymous buffer (trigger $set)
+            registerFile[0].input = anon_result;
+            #1;
+            registerFile[0].wr = 1;
+            #1;
+
+            // --- 7: Finally, explicitly set all wires to 0 (or all 1)
+            
+            // ---- FINAL SEQUENCE:
+            opname | cycle | registerFile_x.rst | registerFile_rd_addr | registerFile_rd | alu.func | registerFile_wr_addr | registerFile_wr | duration
+            <NIL>                   X                    XXX                   X             XXX            XXX                    X              X
+            COLD       0            0                    000                   0             000            000                    0              1
+            RESET      1            1                    000                   0             000            000                    0              1
+            GET        2            0                    010                   1             000            000                    0              2
+            GET        4            0                    001                   1             000            000                    0              2
+            EXEC       6            0                    000                   0             001            000                    0              2
+            SET        8            0                    000                   0             000            000                    1              2
+            FINISH     10           0                    000                   0             000            000                    0              1
+
+            // ---- BINARY FORMAT:
+            000000000000 (COLD)
+            100000000000 (RESET.0)
+            000000000000 (RESET.1) * (optimisation possible)
+            001010000000 (GET.0.0)
+            000000000000 (GET.0.1) *
+            000110000000 (GET.0.0)
+            000000000000 (GET.0.1) * (optimisation possible)
+            000000010000 (EXEC.0.0)
+            000000000000 (EXEC.0.1) * (optimisation possible)
+            000000000001 (SET.0.0)
+            000000000000 (SET.0.1) * (optimisation possible)
+            000000000000 (FINISH)
+
+            // ---- OPTIMISED BINARY FORMAT (L1 OPTIMISATION)
+            000000000000 (COLD)
+            100000000000 (RESET)
+            001010000000 (GET.0.0)
+            000000000000 (GET.0.1) * (stall is maintained, unless specified. L2 optimisation removes this stall.)
+            000110000000 (GET)
+            000000010000 (EXEC)
+            000000000001 (SET)
+            000000000000 (FINISH)
+
+            // ---- VERY IMPORTANT NOTE: THE CONTROL WIRES FOR THE DYNAMICALLY ALLOCATED PRIVATE REGISTERS ARE OMITTED HERE.
+            // THE FINAL MICROCODE SEQUENCE WILL BE EXPANDED IN ORDER TO EXECUTE THE NANOCODE.
+        */
+    }
+};
