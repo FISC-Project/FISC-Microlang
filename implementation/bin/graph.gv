@@ -1,0 +1,19 @@
+// Gerado por GNU Bison 3.0.2. 
+// Reportar erros para <bug-bison@gnu.org>. 
+// Página inicial: <http://www.gnu.org/software/bison/>.
+
+digraph "src/frontend/parser.y"
+{
+  node [fontname = courier, shape = box, colorscheme = paired6]
+  edge [fontname = courier]
+
+  0 [label="Estado0\n\l  0 $accept: . source $end\l"]
+  0 -> 1 [style=dashed label="source"]
+  0 -> "0R1" [style=solid]
+ "0R1" [label="R1", fillcolor=3, shape=diamond, style=filled]
+  1 [label="Estado1\n\l  0 $accept: source . $end\l"]
+  1 -> 2 [style=solid label="$end"]
+  2 [label="Estado2\n\l  0 $accept: source $end .\l"]
+  2 -> "2R0" [style=solid]
+ "2R0" [label="Acc", fillcolor=1, shape=diamond, style=filled]
+}

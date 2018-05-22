@@ -1,0 +1,48 @@
+%{
+    #define YYERROR_VERBOSE 1
+    #define YYDEBUG 1
+    #include <frontend.h>
+    #include <debug_compiler.h>
+
+    void frontend_init(FILE * input_file) {
+        yyin = input_file;
+        yyparse();
+        DEBUG(GOOD, "Parsing finished!");
+    }
+
+    void yyerror(const char * str) {
+        static char err_msg[128];
+        sprintf(err_msg, "%s in line %d at: \"%s\"\n", str, lineno + 1, yytext);
+        DEBUG(ERROR, err_msg);
+        exit(-1);
+    }
+
+    void consume_multiline_comment(void) {
+        int c;
+
+        while ((c = yylex()) != 0) {
+            if (c == '*') {
+                while ((c = yylex()) == '*');
+
+                if (c == '/')
+                    return;
+                if (c == 0)
+                    break;
+            }
+        }
+
+        yyerror("unterminated comment");
+    }
+%}
+
+%error-verbose
+
+/*------------------------------------------------*/
+/*---- G R A M M A R    S T A R T S    H E R E ---*/
+/*------------------------------------------------*/
+%start source
+%%
+source:
+    {}
+
+%%

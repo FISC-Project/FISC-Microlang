@@ -1,0 +1,42 @@
+Gramática
+
+    0 $accept: source $end
+
+    1 source: %empty
+
+
+Terminais, com as regras aonde aparecem
+
+$end (0) 0
+error (256)
+
+
+Não-terminais, com as regras aonde aparecem
+
+$accept (3)
+    à esquerda: 0
+source (4)
+    à esquerda: 1, à direita: 0
+
+
+Estado0
+
+    0 $accept: . source $end
+
+    $default  reduzir usando a regra 1 (source)
+
+    source  ir para o estado 1
+
+
+Estado1
+
+    0 $accept: source . $end
+
+    $end  fazer shift, e ir para o estado 2
+
+
+Estado2
+
+    0 $accept: source $end .
+
+    $default  aceite
