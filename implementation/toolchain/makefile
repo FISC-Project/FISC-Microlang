@@ -6,11 +6,10 @@ GEN = $(FRONTEND)/gen
 OBJ = obj
 BIN = bin
 EXE = ulang
-CPPFLAGS = -Isrc -Isrc/backend -Isrc/frontend -Isrc/frontend/gen -Isrc/lib -Isrc/lib/util -Isrc/lib/debug -lfl
+CPPFLAGS = -Isrc -Isrc/backend -Isrc/frontend -Isrc/frontend/gen -Isrc/lib -Isrc/lib/cmdline -Isrc/lib/util -Isrc/lib/debug
 ENV =
 ifeq ($(OS),Windows_NT)
-	ENV += toolchain/Windows/Tools/GnuWin32/bin/
-	CPPFLAGS += -Ltoolchain/Windows/Tools/GnuWin32/lib
+	ENV += toolchain/Windows/Tools/Flex_Bison/
 endif
 CXX    = g++
 LEX    = $(ENV)flex
@@ -26,17 +25,20 @@ SRC_PARSER = parser
 OBJS = $(GEN)/$(SRC_LEXER).yy.c $(GEN)/$(SRC_PARSER).tab.c \
 	$(OBJ)/main.o $(OBJ)/cmdline.o $(OBJ)/debug_compiler.o $(OBJ)/config.o
 
-# Build lexer:
+# Build frontend (lexer):
 $(GEN)/$(SRC_LEXER).yy.c: $(FRONTEND)/$(SRC_LEXER).l
 	@printf "\n> Building...\n"
 	$(LEX) $(LFLAGS) --header-file=$(GEN)/$(SRC_LEXER).yy.h -o $@ $^
 
-# Build parser:
+# Build frontend (parser):
 $(GEN)/$(SRC_PARSER).tab.c: $(FRONTEND)/$(SRC_PARSER).y
 	$(BISON) $(YFLAGS) -o $@ $^
 
 # Build backend:
-$(OBJ)/cmdline.o: $(BACKEND)/cmdline.cpp
+# TODO
+
+# Build libraries:
+$(OBJ)/cmdline.o: $(LIB)/cmdline/cmdline.cpp
 	$(CXX) -o $@ -c $^ -std=c++11 $(CPPFLAGS)
 
 $(OBJ)/debug_compiler.o: $(LIB)/debug/debug_compiler.cpp
@@ -62,4 +64,8 @@ clean:
 
 run:
 	@printf "\n> Running '${ARGS}'...\n"
-	@$(BIN)/$(EXE) ${ARGS}
+ifeq ($(OS),Windows_NT)
+	@$(BIN)/$(EXE).exe ${ARGS}
+else
+	@$(BIN)/$(EXE) ${ARGS}	
+endif

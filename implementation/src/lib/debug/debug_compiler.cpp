@@ -14,11 +14,17 @@ struct gravity_cfg {
 };
 
 void _debug(const char * file, const char * line, enum DEBUG_GRAVITY gravity, std::string msg) {
-    std::cout << "\n" << gravity_cfg_lut[(int)gravity].color_code 
+    std::cout << "\n"
+#ifndef _WIN32
+        << gravity_cfg_lut[(int)gravity].color_code
+#endif
         << (gravity > 0 ? "(" + std::string(gravity_cfg_lut[(int)gravity].gravity_str) + ") " : "") 
         << LANGUAGE << " @ " << &file[strlen("src") + 1]
         << ((gravity == WARNING || gravity == ERROR) ? line : "")
-        << "\e[0m> " << msg;
+#ifndef _WIN32
+        << "\e[0m"
+#endif
+        << "> " <<  msg;
 }
 
 void _debug(const char * file, const char * line, std::string msg) {

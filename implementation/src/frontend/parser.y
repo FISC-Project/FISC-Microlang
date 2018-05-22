@@ -8,6 +8,10 @@
         yyin = input_file;
         yyparse();
         DEBUG(GOOD, "Parsing finished!");
+
+        static char stats_msg[128];
+        sprintf(stats_msg, "\n 1. Lines parsed: %d", lineno + 1);
+        DEBUG(INFO, stats_msg);
     }
 
     void yyerror(const char * str) {
@@ -15,6 +19,11 @@
         sprintf(err_msg, "%s in line %d at: \"%s\"\n", str, lineno + 1, yytext);
         DEBUG(ERROR, err_msg);
         exit(-1);
+    }
+
+    int yywrap(void) { 
+        /* This is called at end of input/lex */
+        return 1; /* Terminate now */
     }
 
     void consume_multiline_comment(void) {
