@@ -14,8 +14,8 @@ endif
 CXX    = g++
 LEX    = $(ENV)flex
 BISON  = $(ENV)bison
-YFLAGS = --debug --verbose -d --graph=$(BIN)/graph.gv
-LFLAGS =
+YFLAGS = --debug -d --graph=$(BIN)/graph.gv --report=all --report-file=$(BIN)/$(SRC_PARSER).output
+LFLAGS = --header-file=$(GEN)/$(SRC_LEXER).yy.h
 
 # Frontend parser source filenames:
 SRC_LEXER  = lexer
@@ -28,7 +28,7 @@ OBJS = $(GEN)/$(SRC_LEXER).yy.c $(GEN)/$(SRC_PARSER).tab.c \
 # Build frontend (lexer):
 $(GEN)/$(SRC_LEXER).yy.c: $(FRONTEND)/$(SRC_LEXER).l
 	@printf "\n> Building...\n"
-	$(LEX) $(LFLAGS) --header-file=$(GEN)/$(SRC_LEXER).yy.h -o $@ $^
+	$(LEX) $(LFLAGS) -o $@ $^
 
 # Build frontend (parser):
 $(GEN)/$(SRC_PARSER).tab.c: $(FRONTEND)/$(SRC_PARSER).y
@@ -58,9 +58,9 @@ all: setup $(OBJS)
 	
 clean:
 	@printf "\n> Cleaning...\n"
-	rm -f $(GEN)/*.*
-	rm -f $(BIN)/*.*
-	rm -f $(OBJ)/*.*
+	rm -f $(GEN)/*
+	rm -f $(BIN)/*
+	rm -f $(OBJ)/*
 
 run: setup
 	@printf "\n> Running '${ARGS}'...\n"
