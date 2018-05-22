@@ -52,9 +52,9 @@ $(OBJ)/main.o: $(SRC)/main.cpp
 	$(CXX) -o $@ -c $^ $(CPPFLAGS)
 
 # Main rules:
-all: $(OBJS)
+all: setup $(OBJS)
 	@printf "\n> Linking...\n"
-	$(CXX) -o $(BIN)/$(EXE) $^ $(CPPFLAGS)
+	$(CXX) -o $(BIN)/$(EXE) $(OBJS) $(CPPFLAGS)
 	
 clean:
 	@printf "\n> Cleaning...\n"
@@ -62,10 +62,15 @@ clean:
 	rm -f $(BIN)/*.*
 	rm -f $(OBJ)/*.*
 
-run:
+run: setup
 	@printf "\n> Running '${ARGS}'...\n"
 ifeq ($(OS),Windows_NT)
 	@$(BIN)/$(EXE).exe ${ARGS}
 else
 	@$(BIN)/$(EXE) ${ARGS}	
 endif
+
+# Prepare project folder structure before running the main rules:
+setup:
+	@mkdir -p $(BIN)
+	@mkdir -p $(OBJ)
