@@ -1,0 +1,47 @@
+module ComponentA {
+    public:
+        // Inputs
+        u8 in;
+        u1 wr, en;
+
+        // Outputs
+        u8 out;
+    
+        fn ComponentA() {
+            
+        }
+};
+
+module ComponentB {
+    public:
+        // Inputs
+        u8 in;
+        u1 wr, en;
+
+        // Outputs
+        u8 out;
+    
+        fn ComponentB(ComponentA compA) {
+            in = compA.out;
+            wr = compA.wr;
+            en = compA.en;
+        }
+};
+
+module Parent {
+    public:
+        ComponentA varA;
+        ComponentB varB(varA);
+
+        fn Parent() {
+
+        }
+};
+
+testbench top {
+    Parent p;
+
+    top() {
+        
+    }
+};

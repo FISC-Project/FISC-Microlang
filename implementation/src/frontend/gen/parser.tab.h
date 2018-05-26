@@ -40,10 +40,105 @@
 extern int yydebug;
 #endif
 
+/* Token type.  */
+#ifndef YYTOKENTYPE
+# define YYTOKENTYPE
+  enum yytokentype
+  {
+    EQ_OP = 258,
+    NEQ_OP = 259,
+    ELLIPSIS = 260,
+    RIGHT_ASSIGN = 261,
+    LEFT_ASSIGN = 262,
+    ADD_ASSIGN = 263,
+    SUB_ASSIGN = 264,
+    MUL_ASSIGN = 265,
+    DIV_ASSIGN = 266,
+    MOD_ASSIGN = 267,
+    AND_ASSIGN = 268,
+    XOR_ASSIGN = 269,
+    OR_ASSIGN = 270,
+    RIGHT_OP = 271,
+    LEFT_OP = 272,
+    INC_OP = 273,
+    DEC_OP = 274,
+    POW_OP = 275,
+    PTR_OP = 276,
+    AND_OP = 277,
+    OR_OP = 278,
+    GE_OP = 279,
+    LE_OP = 280,
+    FN = 281,
+    CONST = 282,
+    TYPEDEF = 283,
+    STATIC = 284,
+    ENUM = 285,
+    UNION = 286,
+    STRUCT = 287,
+    THIS = 288,
+    DEFINE = 289,
+    INCLUDE = 290,
+    PRAGMA = 291,
+    EXTERN = 292,
+    RETURN = 293,
+    SIZEOF = 294,
+    ALIGNAS = 295,
+    ALIGNOF = 296,
+    IF = 297,
+    ELSE = 298,
+    ELSIF = 299,
+    SWITCH = 300,
+    WHILE = 301,
+    FOR = 302,
+    BREAK = 303,
+    CONTINUE = 304,
+    DO = 305,
+    PUBLIC = 306,
+    PRIVATE = 307,
+    PROTECTED = 308,
+    MODULE = 309,
+    TESTBENCH = 310,
+    INTERFACE = 311,
+    EXTENDS = 312,
+    IMPLEMENTS = 313,
+    VIRTUAL = 314,
+    ALWAYS = 315,
+    I_CONSTANT = 316,
+    D_CONSTANT = 317,
+    IDENTIFIER = 318,
+    STRING_LITERAL = 319,
+    ENUMERATION_CONSTANT = 320,
+    HDL_CONSTANT = 321,
+    TYPEDEF_NAME = 322,
+    MODULE_NAME = 323,
+    TESTBENCH_NAME = 324,
+    GLOBAL_SRC = 325,
+    SYSOBJ = 326,
+    DATATYPE = 327
+  };
+#endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+typedef union YYSTYPE YYSTYPE;
+union YYSTYPE
+{
+#line 79 "src/frontend/parser.y" /* yacc.c:1909  */
+
+    /* Standard types: */
+    char         cval;
+	char *       sval;
+	int          ival;
+	unsigned int uival;
+	float        fval;
+	double       dval;
+
+    /* AST Types: */
+    ast_datatype_t * ast_datatype_v;
+    /* TODO: ADD MORE AST TYPES */
+
+#line 141 "src/frontend/gen/parser.tab.h" /* yacc.c:1909  */
+};
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

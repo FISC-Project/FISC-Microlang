@@ -1,0 +1,320 @@
+{
+/*-----------*/
+/* VARIABLES */
+/*-----------*/
+var v;         /* Needs inferring */
+v = 10;        /* Now inferred    */
+u32 v;         /* Explicit        */
+var v = 10;    /* Inferred        */
+u32 v = 20;    /* Explicit        */
+
+/*-------------------*/
+/* INTEGER CONSTANTS */
+/*-------------------*/
+10;
+10i64;
+10u8;
+10u12;    /* Special kind of constant. It's an unsigned 16 bit value capped to 12 bits only */
+0b1010u4; /* Infers into an u8 data type literal                                            */
+0x1000u8; /* Loses the top 8 bits                                                           */
+
+/*------------*/
+/* DATA TYPES */
+/*------------*/
+u1     v;
+u8     v;
+u16    v;
+u32    v;
+u64    v;
+s8     v;
+s16    v;
+s32    v;
+s64    v;
+// Note:  Any declaration follows this format: u/s<n> v OR <unsigned|signed><bitsize> <varname>
+bool   v; /* Translates to u1                                                          */
+char   v; /* Translates to u16. Signedness can be controlled through compiler flags.   */
+string v; /* Translates to an array of u16                                             */
+usize  v; /* Translates to u32                                                         */
+ssize  v; /* Translates to s32                                                         */
+var    v; /* Translates during assignment operation/usage                              */
+array  v; /* Translates during assignment operation/usage                              */
+
+/* We may declare new datatypes like this: */
+typedef i32 int;
+
+/*--------*/
+/* ARRAYS */
+/*--------*/
+u8 arr1    = [1, 2, 3];        /* Array of just integers                                                                */
+array arr2 = [1, 'a', "test"]; /* Array of multiple datatypes. This essentially creates an 'anonymous' packed datatype. */
+
+/*---------------*/
+/* ARRAY SLICING */
+/*---------------*/
+arr   = ['a', 'b', 'c'];
+slice = arr[0:50]   /* From 0 to 50, exclusive                                   */
+slice = arr[5:10:2] /* From 5 to 10, exclusive, steps 2 values through the array */
+whole = arr[:]      /* Whole array                                               */
+whole = arr[::3]    /* Whole array, steps 3 values through the array             */
+
+/*-----------------------*/
+/* FUNCTION DECLARATIONS */
+/*-----------------------*/
+fn foo() {
+	/* returns void */
+}
+
+u32 bar(u32 a, u8 b, Object c) {
+	/* returns u32 */
+}
+
+(u8, u16, u32) returnTuple() {
+	return (10, 20, 30);
+}
+
+u64 foobar(u32 * ptr, i64 & reference) {
+	unsafe {
+		*ptr = 10;
+	}
+	reference = 10; /* Doesn't need reference block. Is mutable by default */
+	return reference;
+}
+
+/*------------------*/
+/* FUNCTION CALLING */
+/*------------------*/
+foo();
+bar(10, 'a', counterModule);
+println("Test");
+
+/*------------------*/
+/* FUNCTION POINTER */
+/*------------------*/
+fptr1 = bar;                      /* Inferred: u32(u32, u8, Object) */
+u64(u32 *, i64 &) fptr2 = foobar; /* Explicit                       */
+
+/*----------------*/
+/* IF EXPRESSIONS */
+/*----------------*/
+if(v == 10)
+	statement1();
+
+if(v == 20) {
+	statement1();
+	statement2();
+}
+
+var v2 = if(v == 30) 10 else 20; /* Infers datatype u8 */
+var v3 = if(v == 40) 30;         /* Infers two possible datatypes. u8 if v == 30 and () if v != 30. 
+                                    This is NOT VALID and an error will be issued. */ 
+
+/*-----------------------*/
+/* TERNARY IF STATEMENTS */
+/*-----------------------*/
+/* This is also valid: */
+var v4 = (v2 == 30) ? 1 : 2;
+
+/* And this: */
+var v4 = (v2 == 30) ? {
+	/*...*/
+	1
+} : {
+	/*...*/
+	2
+};
+
+/*-------------------*/
+/* SWITCH EXPRESSION */
+/*-------------------*/
+switch(var) {
+	@1: one();
+	@2: two();
+	@3:
+		three();
+		another();
+
+	@4: { /* Curly braces optional */
+		four();
+		another();
+	}
+	@5,6,7:
+		five();
+		six();
+		seven();
+
+	@u8: isU8(); /* Is var of type u8 */
+
+	@equalto(): lambdaMatch(); /* Match var's value against equalto() return value */
+
+	@else: /* Default branch */
+		none();
+	@: /* Also default branch */
+		none();
+	[bindall]@: /* Get whatever value comes by binding */
+		func(bindall);
+}
+
+/*-------*/
+/* LOOPS */
+/*-------*/
+for(u16 i = 0; i < 10; i++) {
+	/*...*/
+}
+
+while(v > 30) {
+	v--;
+}
+
+/* Curly braces are not mandatory */
+while(v > 30)
+	v--;
+
+/* And we don't have to fill all statements in the for loop */
+for(;;v--);
+
+/* Infinite loop: */
+for(;;);
+/* Also infinite */
+while(1);
+
+/* We may use keywords 'continue' and 'break' */
+for(;;) {
+	/*...*/
+	continue;
+}
+for(;;) {
+	/*...*/
+	break;
+}
+
+/* We can also use foreach loops */
+for(var v : arr) {
+	/* ... */
+}
+
+/*---------*/
+/* STRUCTS */
+/*---------*/
+struct Mystruct {
+	u8 x;
+	u8 y;
+};
+
+/* Note: structs are automatically 'typedef'd */
+
+/*---------*/
+/* CLASSES */
+/*---------*/
+class Myclass {
+public:
+	fn Myclass() {
+		/* Constructor */
+	}
+
+	fn public_function() {
+
+	}
+
+	u8 publicdata;
+
+private:
+	fn private_function() {
+
+	}
+
+	u8 privatedata;
+};
+
+/* We might also do: */
+class Myclass {
+	public fn Myclass() {
+		/* Constructor. Must always be public */
+	}
+
+	public fn public_function() {
+
+	}
+
+	public u8 publicdata;
+
+	private fn private_function() {
+		/* private keyword here is optional. Not having private makes the function 
+		   private by default. */
+	}
+
+	private u8 privatedata;
+};
+
+/*-------*/
+/* ENUMS */
+/*-------*/
+enum Enumlist {
+	ENUM1,
+	ENUM2,
+	ENUM3,
+};
+
+enum { /* Anonymous enum */
+	ENUM1 = 1, /* Starts at 1 */
+	ENUM2,     /* 2           */
+	ENUM3 = 5, /* Skips to 5  */
+	ENUM4      /* 6           */
+};
+
+enum { /* It can be anonymous */
+	ENUM1,
+	ENUM2,
+	ENUM3,
+	ENUM4,
+	Matchstruct { /* Match this struct */
+		u8 x,y,z;
+	},
+	Tuple(u8, u16, u32), /* Match this tuple */
+	(u8, f64) /* Anonymous tuples are allowed */
+};
+
+/* We may also do this: */
+struct Mystruct {
+	u8 x,z,y;
+};
+
+enum {
+	ENUM1,
+	struct Mystruct /* We might want to declare the struct elsewhere */
+};
+
+enum {
+	ENUM1,
+	/* Or perhaps a function which could act as a lambda */
+	u8 mylambda() = {
+		u8 a = 1;
+		u8 b = 2;
+		a + b
+	},
+	ENUM2,
+};
+
+/*--------------*/
+/* DATA CASTING */
+/*--------------*/
+u8 var = 10;
+u16 var2 = (u16)var; /* Simple enough. Just like C/C++/Java/C# */
+
+/*------*/
+/* TODO */
+/*------*/
+
+/* 1- Review datatypes (generics, ranges, etc.)                               */
+/* 2- Add memory specifications (stack, heap, safety, variable binding, etc)  */
+/* 3- Pointers (smart pointers only) (DESIGN)                                 */
+/* 4- Add scope specifications                                                */
+/* 5- Add function overloading                                                */
+/* 6- Add operator overloading                                                */
+/* 7- Add imports                                                             */
+/* 8- Add error handling                                                      */
+/* 9- Add Lambdas                                                             */
+/* 10- Add variadics                                                          */
+/* 11- Add macros                                                             */
+/* 12- Add threads                                                            */
+/* 13- Add attributes                                                         */
+/* 14- Add test system                                                        */

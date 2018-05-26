@@ -54,7 +54,7 @@ testbench Register_and_ALU_tb {
     Register registerFile[8];
     ALU alu(.$clk = clk);
 
-    u8 +,-,*,/ (u8 lval, u8 rval) {
+    u8 /* +,-,*,/ */ placeholder_name(u8 lval, u8 rval) {
         alu.op1  = lval;
         alu.op2  = rval;
         alu.func = $fnn + 1;

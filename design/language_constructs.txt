@@ -1,0 +1,80 @@
+******* 1. Variables    *******
+******* 1.1. Data types *******
+
+> Scalar types:
+
+Unsigned:
+u1, u2, u3, ..., u8, ... u16, ..., u32, ..., u64, ..., u<n>
+
+Signed:
+s1, s2, s3, ..., s8, ... s16, ..., s32, ..., s64, ..., s<n>
+
+> Vector types:
+
+u/s<sz> <varName> [n]
+
+Example:
+
+u32 buffer[10];
+s32 signed_buffer[5];
+
+******* 2. Functions *******
+> Declaring functions:
+fn foo() {
+
+}
+
+fn bar(u32 arg1, u8 arg2) {
+
+}
+
+u32 baz(u32 arg1, u1 arg2) {
+    return arg1 + arg2;
+}
+
+u32 variadic(u32 arg1, u1 arg2, ...) {
+    return arg1 + arg2 + $varc; // $varc is a magic variable
+}
+
+> Using functions:
+foo();
+bar(1, 2);
+u32 ret = baz(5, 10);
+u32 ret = variadic(10, 20, 30, 40, 50);
+
+******* 3. Comments *******
+// Single line comment
+/*
+Multiline comment
+*/
+
+******* 4. Control flow *******
+> If expression (*1*)
+    if(condition) { (*2*)
+
+    } else {
+
+    }
+
+Example 1 - Optional braces:
+    u32 buffer = 0;
+    u32 buffer2;
+    if(buffer == 0)
+        buffer2 = 10;
+    else
+        buffer3 = 20;
+
+Example 2 - Using if as expression:
+    u32 buffer = 0;
+    u32 buffer2 = if(buffer == 0) 10 else 20;
+
+Example 3 - Ternary if:
+    u32 buffer = 0;
+    u32 buffer2 = (buffer == 0) ? 10 : 20;
+
+NOTES (*N*):
+(*1*): Expressions return values, as opposed to statements.
+(*2*): braces are optional for single blocks.
+
+> While statements:
+...TODO...

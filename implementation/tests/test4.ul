@@ -88,7 +88,7 @@ testbench CPU {
         ADD, ADDI, ADDIS, ADDS,
         SUB, SUBI, SUBIS, SUBS,
         MUL, SMULH, UMULH, 
-        SDIV, UDIV
+        SDIV, UDIV,
         AND, ANDI, ANDIS, ANDS,
         ORR, ORRI,
         EOR, EORI,
@@ -117,7 +117,7 @@ testbench CPU {
         #1 clk = ~clk;
     }
 
-    u32 +,-,*,/ (u32 lval, u32 rval) {
+    u32 /* +,-,*,/ */ placeholder_name(u32 lval, u32 rval) {
         alu.op1  = lval;
         alu.op2  = rval;
         alu.func = $fnn + 1;

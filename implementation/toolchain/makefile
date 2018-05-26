@@ -1,21 +1,21 @@
-SRC = src
+SRC      = src
 LIB      = $(SRC)/lib
 FRONTEND = $(SRC)/frontend
 BACKEND  = $(SRC)/backend
-GEN = $(FRONTEND)/gen
-OBJ = obj
-BIN = bin
-EXE = ulang
-CPPFLAGS = -Isrc -Isrc/backend -Isrc/frontend -Isrc/frontend/gen -Isrc/lib -Isrc/lib/cmdline -Isrc/lib/util -Isrc/lib/debug
-ENV =
+GEN      = $(FRONTEND)/gen
+OBJ      = obj
+BIN      = bin
+EXE      = ulang
+CPPFLAGS = -std=c++11 -Isrc -Isrc/backend -Isrc/frontend -Isrc/frontend/gen -Isrc/lib -Isrc/lib/cmdline -Isrc/lib/util -Isrc/lib/debug
+ENV      =
 ifeq ($(OS),Windows_NT)
 	ENV += toolchain/Windows/Tools/Flex_Bison/
 endif
-CXX    = g++
-LEX    = $(ENV)flex
-BISON  = $(ENV)bison
-YFLAGS = --debug -d --graph=$(BIN)/graph.gv --report=all --report-file=$(BIN)/$(SRC_PARSER).output
-LFLAGS = --header-file=$(GEN)/$(SRC_LEXER).yy.h
+CXX     = g++
+LEX     = $(ENV)flex
+BISON   = $(ENV)bison
+YFLAGS  = --debug -d --graph=$(BIN)/graph.gv --report=all --report-file=$(BIN)/$(SRC_PARSER).output
+LFLAGS  = --header-file=$(GEN)/$(SRC_LEXER).yy.h
 
 # Frontend parser source filenames:
 SRC_LEXER  = lexer
@@ -23,7 +23,8 @@ SRC_PARSER = parser
 
 # Target objects/outputs:
 OBJS = $(GEN)/$(SRC_LEXER).yy.c $(GEN)/$(SRC_PARSER).tab.c \
-	$(OBJ)/main.o $(OBJ)/cmdline.o $(OBJ)/debug_compiler.o $(OBJ)/config.o
+	$(OBJ)/main.o $(OBJ)/cmdline.o $(OBJ)/debug_compiler.o $(OBJ)/config.o \
+	$(OBJ)/ast_datatype.o
 
 # Build frontend (lexer):
 $(GEN)/$(SRC_LEXER).yy.c: $(FRONTEND)/$(SRC_LEXER).l
@@ -35,17 +36,18 @@ $(GEN)/$(SRC_PARSER).tab.c: $(FRONTEND)/$(SRC_PARSER).y
 	$(BISON) $(YFLAGS) -o $@ $^
 
 # Build backend:
-# TODO
+$(OBJ)/ast_datatype.o: $(BACKEND)/ast_datatype.cpp
+	$(CXX) -o $@ -c $^ $(CPPFLAGS)
 
 # Build libraries:
 $(OBJ)/cmdline.o: $(LIB)/cmdline/cmdline.cpp
-	$(CXX) -o $@ -c $^ -std=c++11 $(CPPFLAGS)
+	$(CXX) -o $@ -c $^ $(CPPFLAGS)
 
 $(OBJ)/debug_compiler.o: $(LIB)/debug/debug_compiler.cpp
-	$(CXX) -o $@ -c $^ -std=c++11 $(CPPFLAGS)
+	$(CXX) -o $@ -c $^ $(CPPFLAGS)
 
 $(OBJ)/config.o: $(SRC)/config.cpp
-	$(CXX) -o $@ -c $^ -std=c++11 $(CPPFLAGS)
+	$(CXX) -o $@ -c $^ $(CPPFLAGS)
 
 # Build main:
 $(OBJ)/main.o: $(SRC)/main.cpp
