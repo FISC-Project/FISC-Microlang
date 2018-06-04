@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 #include <cstring>
-#include <ast_datatype.h>
+#include <backend.h>
 #include <parser.tab.h>
 
 const std::vector<std::string> pseudo_datatype_lut = {
@@ -17,9 +17,9 @@ const std::vector<std::string> pseudo_datatype_lut = {
 ast_datatype_t * ast_create_datatype(char * yytext, int pseudo_idx) {
     ast_datatype_t * ast_datatype_v = new ast_datatype_t;
     if(pseudo_idx > -1) {
-        /* TODO */
+        /* TODO: translate to native */
     } else {
-        /* TODO */
+        /* TODO: parse native */
     }
     return ast_datatype_v;
 }

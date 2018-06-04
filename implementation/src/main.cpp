@@ -3,7 +3,7 @@
 #include <debug_compiler.h>
 #include <cmdline.h>
 
-/* RUN COMMAND: make -f toolchain/makefile clean all run ARGS="tests/test1.ul" */
+/* RUN COMMAND: make -f toolchain/makefile clean all run test=test1.ul */
 
 int main(int argc, char ** argv) {
     if(argc > 1) {
@@ -16,7 +16,9 @@ int main(int argc, char ** argv) {
         }
 
         DEBUG(INFO, "Parsing started...");
+        
         frontend_init(file);
+        ast_dump();
     }
 
     DEBUG(INFO, "Finished compilation.\n\n");

@@ -4,7 +4,6 @@
     int lineno = 0;
 
     extern void consume_multiline_comment(void);
-    extern int sym_check_type(void);
 
     #define UIVAL(retid)      { yylval.uival = atoi(yytext); return retid; }
     #define UIVAL_HEX(retid)  { yylval.uival = strtol(yytext, 0, 16); return retid; }
@@ -136,7 +135,7 @@ always                       return ALWAYS;
 #{D}+                        SVAL(D_CONSTANT);
 \${L}{A}*                    SVAL(SYSOBJ);
 
-{L}{A}*                      return sym_check_type(); /* Symbols / Identifiers */
+{L}{A}*                      return ast_sym_check_type(); /* Symbols / Identifiers */
 .                            ;
 [ \t\n]                      lineno++;
 

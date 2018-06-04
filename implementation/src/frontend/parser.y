@@ -1,12 +1,10 @@
 %{
     #define YYERROR_VERBOSE 1
-    #define YYDEBUG 1
-    #include <map>
+    #define YYDEBUG         1
+
     #include <backend.h>
     #include <frontend.h>
     #include <debug_compiler.h>
-
-    std::map<std::string, int> sym_table;
 
     void frontend_init(FILE * input_file) {
         yyin = input_file;
@@ -46,38 +44,12 @@
 
         yyerror("unterminated comment");
     }
-
-    /**
-        TODO: MOVE THE TWO FUNCTIONS BELOW TO THE BACKEND 
-    **/
-
-    void sym_add(char * key, int token_id) {
-        if(sym_table.find(key) == sym_table.end())
-            sym_table.insert(std::pair<std::string, int>(key, token_id));
-    }
-
-    int sym_check_type(void) {
-        if(ast_check_datatype(yytext)) {
-            /* Return data type */
-            return DATATYPE;
-        } else {
-            /* Copy symbol text first */
-            yylval.sval = new char[strlen(yytext) + 1];
-            strcpy(yylval.sval, yytext);
-
-            /* Fetch symbol type from map */
-            if(sym_table.find(yytext) != sym_table.end()) 
-                return sym_table.at(yytext);
-            else /* Return identifier type */
-                return IDENTIFIER;
-        }
-    }
 %}
 
 %error-verbose
 
 %union {
-    /* Standard types: */
+    /* Standard types */
     char         cval;
 	char *       sval;
 	int          ival;
@@ -85,34 +57,186 @@
 	float        fval;
 	double       dval;
 
-    /* AST Types: */
-    ast_datatype_t * ast_datatype_v;
-    /* TODO: ADD MORE AST TYPES */
+    /* AST node types */
+    root                           * rootval;
+	translation_unit               * translation_unit_v;
+	translation_unit_anonymous     * translation_unit_anonymous_v;
+	external_declaration           * external_declaration_v;
+	external_declaration_anonymous * external_declaration_anonymous_v;
+	function_definition            * function_definition_v;
+	declaration_list               * declaration_list_v;
+	declaration                    * declaration_v;
+	declaration_specifiers         * declaration_specifiers_v;
+	direct_abstract_declarator     * direct_abstract_declarator_v;
+	abstract_declarator            * abstract_declarator_v;
+	direct_declarator              * direct_declarator_v;
+	declarator                     * declarator_v;
+	designation                    * designation_v;
+	designator_list                * designator_list_v;
+	designator                     * designator_v;
+	initializer                    * initializer_v;
+	init_declarator                * init_declarator_v;
+	initializer_list               * initializer_list_v;
+	init_declarator_list           * init_declarator_list_v;
+	pointer                        * pointer_v;
+	type_specifier                 * type_specifier_v;
+	storage_class_specifier        * storage_class_specifier_v;
+	struct_or_union_specifier      * struct_or_union_specifier_v;
+	struct_or_union                * struct_or_union_v;
+	struct_declaration_list        * struct_declaration_list_v;
+	struct_declaration             * struct_declaration_v;
+	struct_declarator_list         * struct_declarator_list_v;
+	struct_declarator              * struct_declarator_v;
+	specifier_qualifier_list       * specifier_qualifier_list_v;
+	enum_specifier                 * enum_specifier_v;
+	enumerator_list                * enumerator_list_v;
+	enumerator                     * enumerator_v;
+	parameter_type_list            * parameter_type_list_v;
+	parameter_list                 * parameter_list_v;
+	parameter_declaration          * parameter_declaration_v;
+	identifier_list                * identifier_list_v;
+	type_name                      * type_name_v;
+	type_qualifier_list            * type_qualifier_list_v;
+	type_qualifier                 * type_qualifier_v;
+	alignment_specifier            * alignment_specifier_v;
+	struct_access                  * struct_access_v;
+	primary_expression             * primary_expression_v;
+	constant                       * constant_v;
+	enumeration_constant           * enumeration_constant_v;
+	prod_string                    * prod_string_v;
+	postfix_expression             * postfix_expression_v;
+	argument_expression_list       * argument_expression_list_v;
+	unary_expression               * unary_expression_v;
+	unary_operator                 * unary_operator_v;
+	cast_expression                * cast_expression_v;
+	arith_logic_expression         * arith_logic_expression_v;
+	conditional_expression         * conditional_expression_v;
+	assignment_expression          * assignment_expression_v;
+	assignment_operator            * assignment_operator_v;
+	expression                     * expression_v;
+	constant_expression            * constant_expression_v;
+	statement                      * statement_v;
+	labeled_statement              * labeled_statement_v;
+	compound_statement             * compound_statement_v;
+	block_item_list                * block_item_list_v;
+	block_item                     * block_item_v;
+	expression_statement           * expression_statement_v;
+	selection_statement            * selection_statement_v;
+	selection_statement_list       * selection_statement_list_v;
+	iteration_statement            * iteration_statement_v;
+	jump_statement                 * jump_statement_v;
+	always_statement               * always_statement_v;
+	delay_statement                * delay_statement_v;
+    ast_datatype_t                 * ast_datatype_v;
 };
 
-/* Token operators */
+    /* Token operators */
 %token EQ_OP      NEQ_OP     ELLIPSIS   RIGHT_ASSIGN LEFT_ASSIGN ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN
 %token DIV_ASSIGN MOD_ASSIGN AND_ASSIGN XOR_ASSIGN   OR_ASSIGN   RIGHT_OP   LEFT_OP    INC_OP
 %token DEC_OP     POW_OP     PTR_OP     AND_OP       OR_OP       GE_OP      LE_OP 
 
-/* Token keywords */
+    /* Token keywords */
 %token FN        CONST   TYPEDEF   STATIC    ENUM    UNION      STRUCT  THIS    DEFINE    
 %token INCLUDE   PRAGMA  EXTERN    RETURN    SIZEOF  ALIGNAS    ALIGNOF IF      ELSE
 %token ELSIF     SWITCH  WHILE     FOR       BREAK   CONTINUE   DO      PUBLIC  PRIVATE 
 %token PROTECTED MODULE  TESTBENCH INTERFACE EXTENDS IMPLEMENTS VIRTUAL ALWAYS
 
-%token <ival>           I_CONSTANT
-%token <sval>           D_CONSTANT
-%token <sval>           IDENTIFIER
-%token <sval>           STRING_LITERAL
-%token <sval>           ENUMERATION_CONSTANT
-%token <sval>           HDL_CONSTANT
-%token <sval>           TYPEDEF_NAME
-%token <sval>           MODULE_NAME
-%token <sval>           TESTBENCH_NAME
-%token <sval>           GLOBAL_SRC
-%token <sval>           SYSOBJ
+    /* Native tokens */
+%token <ival> I_CONSTANT
+%token <sval> D_CONSTANT
+%token <sval> IDENTIFIER
+%token <sval> STRING_LITERAL
+%token <sval> ENUMERATION_CONSTANT
+%token <sval> HDL_CONSTANT
+%token <sval> TYPEDEF_NAME
+%token <sval> MODULE_NAME
+%token <sval> TESTBENCH_NAME
+%token <sval> GLOBAL_SRC
+%token <sval> SYSOBJ
+
+    /* AST tokens */
 %token <ast_datatype_v> DATATYPE
+
+	/* AST production types */
+%type <rootval>                          root
+%type <rootval>                          source
+%type <translation_unit_v>               translation_unit
+%type <translation_unit_anonymous_v>     translation_unit_anonymous
+%type <external_declaration_v>           external_declaration
+%type <external_declaration_anonymous_v> external_declaration_anonymous
+%type <function_definition_v>            function_definition
+%type <declaration_list_v>               declaration_list
+%type <declaration_v>                    declaration
+%type <declaration_specifiers_v>         declaration_specifiers
+%type <direct_abstract_declarator_v>     direct_abstract_declarator
+%type <abstract_declarator_v>            abstract_declarator
+%type <direct_declarator_v>              direct_declarator
+%type <declarator_v>                     declarator
+%type <designation_v>                    designation
+%type <designator_list_v>                designator_list
+%type <designator_v>                     designator
+%type <initializer_v>                    initializer
+%type <init_declarator_v>                init_declarator
+%type <initializer_list_v>               initializer_list
+%type <init_declarator_list_v>           init_declarator_list
+%type <pointer_v>                        pointer
+%type <type_specifier_v>                 type_specifier
+%type <storage_class_specifier_v>        storage_class_specifier
+%type <struct_or_union_specifier_v>      struct_or_union_specifier
+%type <struct_or_union_v>                struct_or_union
+%type <struct_declaration_list_v>        struct_declaration_list
+%type <struct_declarator_list_v>         struct_declarator_list
+%type <struct_declaration_v>             struct_declaration
+%type <struct_declarator_v>              struct_declarator
+%type <specifier_qualifier_list_v>       specifier_qualifier_list
+%type <enum_specifier_v>                 enum_specifier
+%type <enumerator_list_v>                enumerator_list
+%type <enumerator_v>                     enumerator
+%type <parameter_type_list_v>            parameter_type_list
+%type <parameter_list_v>                 parameter_list
+%type <parameter_declaration_v>          parameter_declaration
+%type <identifier_list_v>                identifier_list
+%type <type_name_v>                      type_name
+%type <type_qualifier_list_v>            type_qualifier_list
+%type <type_qualifier_v>                 type_qualifier
+%type <alignment_specifier_v>            alignment_specifier
+%type <struct_access_v>                  struct_access
+%type <primary_expression_v>             primary_expression
+%type <constant_v>                       constant
+%type <enumeration_constant_v>           enumeration_constant
+%type <prod_string_v>                    prod_string
+%type <postfix_expression_v>             postfix_expression
+%type <argument_expression_list_v>       argument_expression_list
+%type <unary_expression_v>               unary_expression
+%type <unary_operator_v>                 unary_operator
+%type <cast_expression_v>                cast_expression
+%type <arith_logic_expression_v>         multiplicative_expression
+%type <arith_logic_expression_v>         additive_expression
+%type <arith_logic_expression_v>         shift_expression
+%type <arith_logic_expression_v>         relational_expression
+%type <arith_logic_expression_v>         equality_expression
+%type <arith_logic_expression_v>         and_expression
+%type <arith_logic_expression_v>         exclusive_or_expression
+%type <arith_logic_expression_v>         inclusive_or_expression
+%type <arith_logic_expression_v>         logical_and_expression
+%type <arith_logic_expression_v>         logical_or_expression
+%type <conditional_expression_v>         conditional_expression
+%type <assignment_expression_v>          assignment_expression
+%type <assignment_operator_v>            assignment_operator
+%type <expression_v>                     expression
+%type <constant_expression_v>            constant_expression
+%type <statement_v>                      statement
+%type <labeled_statement_v>              labeled_statement
+%type <compound_statement_v>             compound_statement
+%type <block_item_list_v>                block_item_list
+%type <block_item_v>                     block_item
+%type <expression_statement_v>           expression_statement
+%type <selection_statement_v>            selection_statement
+%type <selection_statement_list_v>       selection_statement_list
+%type <iteration_statement_v>            iteration_statement
+%type <jump_statement_v>                 jump_statement
+%type <always_statement_v>               always_statement
+%type <delay_statement_v>                delay_statement
 
 /*------------------------------------------------*/
 /*---- G R A M M A R    S T A R T S    H E R E ---*/
@@ -126,8 +250,8 @@ source:
 ;
 
 root:
-    MODULE    IDENTIFIER '{' translation_unit '}' ';' { sym_add($2, MODULE_NAME);    }
-|   TESTBENCH IDENTIFIER '{' translation_unit '}' ';' { sym_add($2, TESTBENCH_NAME); }
+    MODULE    IDENTIFIER '{' translation_unit '}' ';' { ast_sym_add($2, MODULE_NAME);    }
+|   TESTBENCH IDENTIFIER '{' translation_unit '}' ';' { ast_sym_add($2, TESTBENCH_NAME); }
 ;
 
     /* Global, static anonymous translation unit */
@@ -211,8 +335,8 @@ direct_declarator:
 |   direct_declarator '['     constant_expression ':' constant_expression ';' ']' {}
 |   direct_declarator '[' ';' ']'                                                 {}
 |   direct_declarator '['
-	  constant_expression ':' constant_expression ';'
-	  constant_expression ':' constant_expression ']'                             {}
+    constant_expression ':' constant_expression ';'
+    constant_expression ':' constant_expression ']'                               {}
 |   direct_declarator '[' '*' ']'                                                 {}
 |   direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'    {}
 |   direct_declarator '[' STATIC assignment_expression                     ']'    {}
@@ -333,7 +457,7 @@ designator:
 |   '.' identifier_or_sysobj                            {}
 |   '[' constant_expression ':' constant_expression ']' {}
 |   '[' constant_expression ':' constant_expression ';'
-	    constant_expression ':' constant_expression ']' {}
+        constant_expression ':' constant_expression ']' {}
 ;
 
     /* Types */
@@ -435,7 +559,7 @@ primary_expression:
     IDENTIFIER         {}
 |   MODULE_NAME        { /* Calling module constructor */ }
 |   constant           {}
-|   string             {}
+|   prod_string        {}
 |   '(' expression ')' {}
 |   SYSOBJ             {}
 ;
@@ -450,7 +574,7 @@ enumeration_constant:
     IDENTIFIER {}
 ;
 
-string:
+prod_string:
     STRING_LITERAL {}
 ;
 
@@ -462,8 +586,8 @@ postfix_expression:
 |   postfix_expression '['     constant_expression ':' constant_expression ';' ']' {}
 |   postfix_expression '[' ';' ']'                                                 {}
 |   postfix_expression '['
-	constant_expression ':' constant_expression ';'
-	constant_expression ':' constant_expression ']'                                {}
+    constant_expression ':' constant_expression ';'
+    constant_expression ':' constant_expression ']'                                {}
 |   postfix_expression '(' ')'                                                     {}
 |   postfix_expression '('       argument_expression_list ')'                      {}
 |   postfix_expression '.'       IDENTIFIER                                        {}
